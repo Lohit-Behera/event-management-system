@@ -1,6 +1,12 @@
 # Event Management System - Backend
 
-A FastAPI-based backend for managing events and attendee registrations with comprehensive timezone support.
+A FastAPI-based backend for managing events and attendee registrations with comprehensive timezone support and direct PostgreSQL connectivity.
+
+## 🌐 Live Demo
+
+- **Backend API**: [https://event-management-system-blush-five.vercel.app](https://event-management-system-blush-five.vercel.app)
+- **Frontend App**: [https://event-management-system-ifab.vercel.app](https://event-management-system-ifab.vercel.app)
+- **API Documentation**: [https://event-management-system-blush-five.vercel.app/docs](https://event-management-system-blush-five.vercel.app/docs)
 
 ## Features
 
@@ -20,11 +26,14 @@ A FastAPI-based backend for managing events and attendee registrations with comp
 - **Timezone Validation**: Ensure only supported timezones are used
 - **Dynamic Offset Calculation**: Handle DST changes automatically
 
-### Pagination & Performance
+### Database & Performance
 
-- Efficient pagination for large attendee lists
-- Attendee count endpoints for pagination metadata
-- Optimized database queries with proper indexing
+- **Direct PostgreSQL Connection**: Using psycopg2 for optimal performance
+- **Connection Pooling**: Efficient database connection management
+- **Efficient pagination** for large attendee lists
+- **Attendee count endpoints** for pagination metadata
+- **Optimized database queries** with proper indexing
+- **Health monitoring** with comprehensive database status checks
 
 ## Setup
 
@@ -34,19 +43,25 @@ A FastAPI-based backend for managing events and attendee registrations with comp
 pip install -r requirements.txt
 ```
 
-2. Set up PostgreSQL database and update the DATABASE_URL in `config.py` or create a `.env` file:
+2. Set up PostgreSQL database and create a `.env` file with your database credentials:
 
-```
-DATABASE_URL=postgresql://username:password@localhost:5432/event_management
+```env
+user=your_username
+password=your_password
+host=localhost
+port=5432
+dbname=event_management
 ```
 
 3. Run the application:
 
 ```bash
-uvicorn main:app --reload
+python main.py
 ```
 
 The API will be available at `http://localhost:8000`
+
+**Note**: Database tables are created automatically on startup.
 
 ## API Endpoints
 
@@ -66,7 +81,13 @@ The API will be available at `http://localhost:8000`
 ### Timezone Management
 
 - `GET /timezones` - Get list of supported timezones
-- `GET /` - API health check
+
+### Health & Monitoring
+
+- `GET /` - API root endpoint
+- `GET /health` - Basic API health check (no database required)
+- `GET /health/db` - Database connection health check with detailed information
+- `GET /health/full` - Comprehensive health check including API and database status
 
 ### Timezone Examples
 
@@ -101,9 +122,25 @@ curl -X GET "http://localhost:8000/events/1/timezone?timezone=PST"
 curl -X GET "http://localhost:8000/timezones"
 ```
 
+#### Health Check Examples
+
+```bash
+# Basic API health check
+curl -X GET "https://event-management-system-blush-five.vercel.app/health"
+
+# Database connection health check
+curl -X GET "https://event-management-system-blush-five.vercel.app/health/db"
+
+# Full system health check
+curl -X GET "https://event-management-system-blush-five.vercel.app/health/full"
+```
+
 ## API Documentation
 
-Once the server is running, visit:
+- **Live API Docs**: [https://event-management-system-blush-five.vercel.app/docs](https://event-management-system-blush-five.vercel.app/docs)
+- **ReDoc**: [https://event-management-system-blush-five.vercel.app/redoc](https://event-management-system-blush-five.vercel.app/redoc)
+
+For local development:
 
 - Swagger UI: `http://localhost:8000/docs`
 - ReDoc: `http://localhost:8000/redoc`

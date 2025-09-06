@@ -2,6 +2,12 @@
 
 A comprehensive full-stack event management system built with FastAPI (backend) and Next.js (frontend), featuring timezone support, pagination, and modern UI components.
 
+## 🌐 Live Demo
+
+- **Frontend App**: [https://event-management-system-ifab.vercel.app](https://event-management-system-ifab.vercel.app)
+- **Backend API**: [https://event-management-system-blush-five.vercel.app](https://event-management-system-blush-five.vercel.app)
+- **API Documentation**: [https://event-management-system-blush-five.vercel.app/docs](https://event-management-system-blush-five.vercel.app/docs)
+
 ## 🚀 Features
 
 ### Backend (FastAPI)
@@ -11,7 +17,8 @@ A comprehensive full-stack event management system built with FastAPI (backend) 
 - **Timezone Support**: Full timezone management with IST as default
 - **Pagination**: Efficient pagination for large attendee lists
 - **Data Validation**: Comprehensive input validation and error handling
-- **Database**: PostgreSQL with SQLAlchemy ORM
+- **Database**: PostgreSQL with direct psycopg2 connections
+- **Health Monitoring**: Comprehensive health check endpoints
 - **API Documentation**: Auto-generated OpenAPI/Swagger docs
 
 ### Frontend (Next.js)
@@ -27,11 +34,11 @@ A comprehensive full-stack event management system built with FastAPI (backend) 
 ### Backend
 
 - **FastAPI** - Modern, fast web framework
-- **SQLAlchemy** - Python SQL toolkit and ORM
+- **psycopg2** - PostgreSQL database adapter for Python
 - **PostgreSQL** - Robust relational database
 - **Pydantic** - Data validation using Python type annotations
-- **Alembic** - Database migration tool
 - **Pytz** - Timezone handling
+- **python-dotenv** - Environment variable management
 
 ### Frontend
 
@@ -76,11 +83,12 @@ source myenv/bin/activate
 pip install -r requirements.txt
 
 # Set up environment variables
-cp .env.example .env
-# Edit .env with your database credentials
-
-# Run database migrations
-alembic upgrade head
+# Create .env file with your database credentials:
+# user=your_username
+# password=your_password
+# host=localhost
+# port=5432
+# dbname=event_management
 
 # Start the backend server
 python main.py
@@ -109,8 +117,11 @@ The frontend will be available at `http://localhost:3000`
 Create a `.env` file in the backend directory:
 
 ```env
-DATABASE_URL=postgresql://username:password@localhost:5432/event_management
-ORIGINS=http://localhost:3000
+user=your_username
+password=your_password
+host=localhost
+port=5432
+dbname=event_management
 ```
 
 ### Database Setup
@@ -121,16 +132,16 @@ ORIGINS=http://localhost:3000
 CREATE DATABASE event_management;
 ```
 
-2. Run migrations:
-
-```bash
-cd backend
-alembic upgrade head
-```
+2. Database tables are created automatically on startup - no migrations needed!
 
 ## 📚 API Documentation
 
 ### Interactive Documentation
+
+- **Live API Docs**: [https://event-management-system-blush-five.vercel.app/docs](https://event-management-system-blush-five.vercel.app/docs)
+- **ReDoc**: [https://event-management-system-blush-five.vercel.app/redoc](https://event-management-system-blush-five.vercel.app/redoc)
+
+For local development:
 
 - **Swagger UI**: `http://localhost:8000/docs`
 - **ReDoc**: `http://localhost:8000/redoc`
@@ -153,7 +164,13 @@ alembic upgrade head
 #### Utilities
 
 - `GET /timezones` - Get supported timezones
-- `GET /` - API health check
+
+#### Health & Monitoring
+
+- `GET /` - API root endpoint
+- `GET /health` - Basic API health check (no database required)
+- `GET /health/db` - Database connection health check with detailed information
+- `GET /health/full` - Comprehensive health check including API and database status
 
 ### Sample API Requests
 
@@ -195,6 +212,19 @@ curl -X GET "http://localhost:8000/events?skip=0&limit=10"
 curl -X GET "http://localhost:8000/events/1/attendees?skip=0&limit=20"
 ```
 
+#### Health Check Examples
+
+```bash
+# Basic API health check
+curl -X GET "https://event-management-system-blush-five.vercel.app/health"
+
+# Database connection health check
+curl -X GET "https://event-management-system-blush-five.vercel.app/health/db"
+
+# Full system health check
+curl -X GET "https://event-management-system-blush-five.vercel.app/health/full"
+```
+
 ## 🌍 Advanced Timezone Support
 
 The system provides comprehensive timezone management with IST as the default, supporting 8 major timezones worldwide:
@@ -225,7 +255,7 @@ The system provides comprehensive timezone management with IST as the default, s
 #### Get Supported Timezones
 
 ```bash
-curl -X GET "http://localhost:8000/timezones"
+curl -X GET "https://event-management-system-blush-five.vercel.app/timezones"
 ```
 
 Response:
@@ -249,9 +279,9 @@ Response:
 
 ```bash
 # Get event times in different timezones
-curl -X GET "http://localhost:8000/events/1/timezone?timezone=EST"
-curl -X GET "http://localhost:8000/events/1/timezone?timezone=UTC"
-curl -X GET "http://localhost:8000/events/1/timezone?timezone=PST"
+curl -X GET "https://event-management-system-blush-five.vercel.app/events/1/timezone?timezone=EST"
+curl -X GET "https://event-management-system-blush-five.vercel.app/events/1/timezone?timezone=UTC"
+curl -X GET "https://event-management-system-blush-five.vercel.app/events/1/timezone?timezone=PST"
 ```
 
 Response:
@@ -343,14 +373,14 @@ CREATE TABLE attendees (
 
 ```bash
 cd backend
-# Install test dependencies
-pip install -r test_requirements.txt
+# Install dependencies
+pip install -r requirements.txt
 
-# Run tests
-pytest
+# Test database connection
+python -c "from database import test_connection; test_connection()"
 
-# Run tests with coverage
-pytest --cov=.
+# Start the application
+python main.py
 ```
 
 ### Frontend Testing
@@ -403,13 +433,12 @@ npm run build
 ```
 event-management-system/
 ├── backend/
-│   ├── alembic/                 # Database migrations
 │   ├── myenv/                   # Python virtual environment
 │   ├── main.py                  # FastAPI application
-│   ├── models.py                # SQLAlchemy models
+│   ├── models.py                # Python dataclass models
 │   ├── schemas.py               # Pydantic schemas
-│   ├── crud.py                  # Database operations
-│   ├── database.py              # Database configuration
+│   ├── crud.py                  # Database operations with psycopg2
+│   ├── database.py              # PostgreSQL connection management
 │   ├── config.py                # Application configuration
 │   ├── timezone_utils.py        # Timezone utilities
 │   ├── requirements.txt         # Python dependencies
@@ -428,10 +457,11 @@ event-management-system/
 ## 🔒 Security Features
 
 - **Input Validation**: Comprehensive validation using Pydantic
-- **SQL Injection Prevention**: SQLAlchemy ORM with parameterized queries
+- **SQL Injection Prevention**: Parameterized queries with psycopg2
 - **CORS Configuration**: Properly configured CORS middleware
 - **Error Handling**: Detailed error messages without sensitive information
 - **Data Sanitization**: Email validation and data cleaning
+- **Health Monitoring**: Comprehensive health check endpoints for production monitoring
 
 ## 🚨 Error Handling
 
@@ -458,7 +488,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 For support and questions:
 
-1. Check the [API Documentation](http://localhost:8000/docs)
+1. Check the [Live API Documentation](https://event-management-system-blush-five.vercel.app/docs)
 2. Review the [Issues](https://github.com/Lohit-Behera/event-management-system/issues) page
 3. Create a new issue with detailed information
 
