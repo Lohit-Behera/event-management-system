@@ -1,0 +1,402 @@
+EVENT MANAGEMENT SYSTEM API DOCUMENTATION
+============================================
+
+Base URL: http://localhost:8000
+API Version: 1.0.0
+
+OVERVIEW
+--------
+This API provides endpoints for managing events and attendee registrations. 
+It includes features to prevent overbooking, duplicate registrations, timezone support,
+and pagination for efficient data handling.
+
+NEW FEATURES IN V2.0
+--------------------
+- Advanced Timezone Management: Full timezone support with 8 major timezones
+- Pagination: Efficient pagination for attendee lists
+- Enhanced Error Handling: Better error messages and validation
+- Database Migrations: Alembic-based migration system
+- OpenAPI Documentation: Auto-generated Swagger/ReDoc docs
+- Real-time Timezone Conversion: Convert event times to any supported timezone
+- DST Handling: Automatic daylight saving time adjustments
+- Frontend Timezone Integration: Seamless timezone handling in React
+
+ENDPOINTS
+=========
+
+1. CREATE EVENT
+---------------
+POST /events
+
+Description: Creates a new event with specified details.
+
+Request Body:
+{
+  "name": "string (required)",
+  "location": "string (required)", 
+  "start_time": "datetime (required, ISO format)",
+  "end_time": "datetime (required, ISO format)",
+  "max_capacity": "integer (required, > 0)",
+  "timezone": "string (optional, default: 'IST')"
+}
+
+Example Request:
+{
+  "name": "Tech Conference 2024",
+  "location": "Convention Center, Mumbai",
+  "start_time": "2024-06-15T09:00:00",
+  "end_time": "2024-06-15T17:00:00",
+  "max_capacity": 500,
+  "timezone": "IST"
+}
+
+Response: 200 OK
+{
+  "id": 1,
+  "name": "Tech Conference 2024",
+  "location": "Convention Center, New York",
+  "start_time": "2024-06-15T09:00:00",
+  "end_time": "2024-06-15T17:00:00",
+  "max_capacity": 500
+}
+
+Error Responses:
+- 400 Bad Request: Invalid data (end_time before start_time, max_capacity <= 0)
+
+2. LIST EVENTS
+--------------
+GET /events
+
+Description: Retrieves all upcoming events.
+
+Query Parameters:
+- skip: integer (optional, default: 0) - Number of events to skip
+- limit: integer (optional, default: 100) - Maximum number of events to return
+
+Example Request:
+GET /events?skip=0&limit=10
+
+Response: 200 OK
+[
+  {
+    "id": 1,
+    "name": "Tech Conference 2024",
+    "location": "Convention Center, New York",
+    "start_time": "2024-06-15T09:00:00",
+    "end_time": "2024-06-15T17:00:00",
+    "max_capacity": 500
+  }
+]
+
+3. REGISTER ATTENDEE
+--------------------
+POST /events/{event_id}/register
+
+Description: Registers an attendee for a specific event.
+
+Path Parameters:
+- event_id: integer (required) - ID of the event to register for
+
+Request Body:
+{
+  "name": "string (required)",
+  "email": "string (required, valid email format)"
+}
+
+Example Request:
+POST /events/1/register
+{
+  "name": "John Doe",
+  "email": "john.doe@example.com"
+}
+
+Response: 200 OK
+{
+  "id": 1,
+  "name": "John Doe",
+  "email": "john.doe@example.com",
+  "event_id": 1
+}
+
+Error Responses:
+- 400 Bad Request: Event not found, email already registered, or event at maximum capacity
+- 404 Not Found: Event not found
+
+4. GET EVENT ATTENDEES
+----------------------
+GET /events/{event_id}/attendees
+
+Description: Retrieves all registered attendees for a specific event.
+
+Path Parameters:
+- event_id: integer (required) - ID of the event
+
+Example Request:
+GET /events/1/attendees
+
+Response: 200 OK
+[
+  {
+    "id": 1,
+    "name": "John Doe",
+    "email": "john.doe@example.com",
+    "event_id": 1
+  },
+  {
+    "id": 2,
+    "name": "Jane Smith",
+    "email": "jane.smith@example.com",
+    "event_id": 1
+  }
+]
+
+Error Responses:
+- 404 Not Found: Event not found
+
+5. GET EVENT WITH ATTENDEES
+----------------------------
+GET /events/{event_id}
+
+Description: Retrieves event details along with all registered attendees.
+
+Path Parameters:
+- event_id: integer (required) - ID of the event
+
+Example Request:
+GET /events/1
+
+Response: 200 OK
+{
+  "id": 1,
+  "name": "Tech Conference 2024",
+  "location": "Convention Center, New York",
+  "start_time": "2024-06-15T09:00:00",
+  "end_time": "2024-06-15T17:00:00",
+  "max_capacity": 500,
+  "attendees": [
+    {
+      "id": 1,
+      "name": "John Doe",
+      "email": "john.doe@example.com",
+      "event_id": 1
+    }
+  ]
+}
+
+Error Responses:
+- 404 Not Found: Event not found
+
+6. GET EVENT WITH TIMEZONE CONVERSION
+-------------------------------------
+GET /events/{event_id}/timezone
+
+Description: Get event details with times converted to specified timezone.
+
+Path Parameters:
+- event_id: integer (required) - ID of the event
+
+Query Parameters:
+- timezone: string (optional, default: 'IST') - Target timezone for conversion
+
+Example Request:
+GET /events/1/timezone?timezone=EST
+
+Response: 200 OK
+{
+  "id": 1,
+  "name": "Tech Conference 2024",
+  "location": "Convention Center, Mumbai",
+  "start_time": "2024-06-15T09:00:00Z",
+  "end_time": "2024-06-15T17:00:00Z",
+  "max_capacity": 500,
+  "attendee_count": 25,
+  "timezone": "IST",
+  "start_time_local": "2024-06-14 23:30:00 EST",
+  "end_time_local": "2024-06-15 07:30:00 EST",
+  "timezone_display": "EST (America/New_York)"
+}
+
+7. GET ATTENDEE COUNT
+---------------------
+GET /events/{event_id}/attendees/count
+
+Description: Get total count of attendees for a specific event.
+
+Path Parameters:
+- event_id: integer (required) - ID of the event
+
+Example Request:
+GET /events/1/attendees/count
+
+Response: 200 OK
+{
+  "event_id": 1,
+  "total_attendees": 25
+}
+
+8. GET SUPPORTED TIMEZONES
+--------------------------
+GET /timezones
+
+Description: Get list of all supported timezones.
+
+Example Request:
+GET /timezones
+
+Response: 200 OK
+[
+  {
+    "timezone": "Asia/Kolkata",
+    "display_name": "IST (Asia/Kolkata)",
+    "utc_offset": "+05:30"
+  },
+  {
+    "timezone": "UTC",
+    "display_name": "UTC (UTC)",
+    "utc_offset": "+00:00"
+  }
+]
+
+9. ROOT ENDPOINT
+----------------
+GET /
+
+Description: Returns basic API information.
+
+Response: 200 OK
+{
+  "message": "Event Management System API"
+}
+
+BUSINESS RULES
+==============
+
+1. OVERBOOKING PREVENTION
+   - Registration is blocked when current attendee count >= max_capacity
+   - Error message: "Event is at maximum capacity"
+
+2. DUPLICATE REGISTRATION PREVENTION
+   - Same email cannot register twice for the same event
+   - Error message: "Email already registered for this event"
+
+3. DATA VALIDATION
+   - End time must be after start time
+   - Max capacity must be greater than 0
+   - Email must be in valid format
+   - All required fields must be provided
+   - Timezone must be supported (IST, UTC, EST, PST, GMT, CET, JST, AEST)
+
+4. EVENT FILTERING
+   - GET /events only returns upcoming events (start_time > current time)
+
+5. ADVANCED TIMEZONE MANAGEMENT
+   - **UTC Storage**: All times are stored in UTC in the database for consistency
+   - **Real-time Conversion**: Times are converted to the specified timezone for display
+   - **Default Timezone**: IST (Indian Standard Time) is the default
+   - **Supported Timezones**: 8 major timezones worldwide
+     * IST (Asia/Kolkata) - Indian Standard Time (+05:30)
+     * UTC (UTC) - Coordinated Universal Time (+00:00)
+     * EST (America/New_York) - Eastern Standard Time (-05:00)
+     * PST (America/Los_Angeles) - Pacific Standard Time (-08:00)
+     * GMT (Europe/London) - Greenwich Mean Time (+00:00)
+     * CET (Europe/Paris) - Central European Time (+01:00)
+     * JST (Asia/Tokyo) - Japan Standard Time (+09:00)
+     * AEST (Australia/Sydney) - Australian Eastern Standard Time (+10:00)
+   - **DST Handling**: Automatic daylight saving time adjustments
+   - **Timezone Validation**: Only supported timezones are accepted
+   - **Dynamic Offsets**: UTC offsets calculated dynamically for current time
+
+6. PAGINATION
+   - Attendee lists support pagination with skip and limit parameters
+   - Default limit is 100, maximum is 1000
+   - Skip parameter starts from 0
+   - Use /events/{id}/attendees/count to get total count for pagination
+
+ERROR CODES
+===========
+
+- 200 OK: Request successful
+- 400 Bad Request: Invalid request data or business rule violation
+- 404 Not Found: Resource not found
+- 422 Unprocessable Entity: Validation error (invalid data format)
+
+TESTING THE API
+===============
+
+1. Start the server:
+   python run.py
+
+2. Access interactive documentation:
+   http://localhost:8000/docs
+
+3. Test endpoints using curl or Postman:
+
+   Create Event:
+   curl -X POST "http://localhost:8000/events" \
+        -H "Content-Type: application/json" \
+        -d '{"name":"Test Event","location":"Test Location","start_time":"2024-06-15T09:00:00","end_time":"2024-06-15T17:00:00","max_capacity":100,"timezone":"IST"}'
+
+   Register Attendee:
+   curl -X POST "http://localhost:8000/events/1/register" \
+        -H "Content-Type: application/json" \
+        -d '{"name":"John Doe","email":"john@example.com"}'
+
+   List Events:
+   curl -X GET "http://localhost:8000/events"
+
+   Get Attendees with Pagination:
+   curl -X GET "http://localhost:8000/events/1/attendees?skip=0&limit=20"
+
+   Get Event with Timezone:
+   curl -X GET "http://localhost:8000/events/1/timezone?timezone=EST"
+   curl -X GET "http://localhost:8000/events/1/timezone?timezone=PST"
+   curl -X GET "http://localhost:8000/events/1/timezone?timezone=JST"
+
+   Get Attendee Count:
+   curl -X GET "http://localhost:8000/events/1/attendees/count"
+
+   Get Supported Timezones:
+   curl -X GET "http://localhost:8000/timezones"
+
+   Create Event in Different Timezones:
+   # IST (default)
+   curl -X POST "http://localhost:8000/events" \
+        -H "Content-Type: application/json" \
+        -d '{"name":"India Tech Summit","location":"Mumbai","start_time":"2024-06-15T09:00:00","end_time":"2024-06-15T17:00:00","max_capacity":500,"timezone":"IST"}'
+
+   # EST
+   curl -X POST "http://localhost:8000/events" \
+        -H "Content-Type: application/json" \
+        -d '{"name":"US Tech Summit","location":"New York","start_time":"2024-06-15T09:00:00","end_time":"2024-06-15T17:00:00","max_capacity":300,"timezone":"EST"}'
+
+   # PST
+   curl -X POST "http://localhost:8000/events" \
+        -H "Content-Type: application/json" \
+        -d '{"name":"West Coast Summit","location":"San Francisco","start_time":"2024-06-15T09:00:00","end_time":"2024-06-15T17:00:00","max_capacity":200,"timezone":"PST"}'
+
+DATABASE SCHEMA
+===============
+
+Events Table:
+- id (Primary Key)
+- name (String, Not Null)
+- location (String, Not Null)
+- start_time (DateTime, Not Null, UTC)
+- end_time (DateTime, Not Null, UTC)
+- max_capacity (Integer, Not Null)
+- timezone (String, Not Null, Default: 'IST')
+
+Attendees Table:
+- id (Primary Key)
+- name (String, Not Null)
+- email (String, Not Null)
+- event_id (Foreign Key to Events.id, Not Null)
+
+NOTES
+=====
+
+- All datetime fields use ISO 8601 format
+- Email validation is performed on the backend
+- Database tables are created automatically on first run
+- The API includes comprehensive error handling and validation
+- Interactive API documentation is available at /docs and /redoc

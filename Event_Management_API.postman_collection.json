@@ -1,0 +1,396 @@
+{
+	"info": {
+		"_postman_id": "12345678-1234-1234-1234-123456789abc",
+		"name": "Event Management System API",
+		"description": "Complete API collection for the Event Management System with timezone support and pagination",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "12345678"
+	},
+	"item": [
+		{
+			"name": "Health Check",
+			"item": [
+				{
+					"name": "Root Endpoint",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								""
+							]
+						},
+						"description": "Check if the API is running"
+					},
+					"response": []
+				}
+			],
+			"description": "Basic health check endpoints"
+		},
+		{
+			"name": "Events",
+			"item": [
+				{
+					"name": "Create Event",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Tech Conference 2024\",\n  \"location\": \"Convention Center, Mumbai\",\n  \"start_time\": \"2024-06-15T09:00:00\",\n  \"end_time\": \"2024-06-15T17:00:00\",\n  \"max_capacity\": 500,\n  \"timezone\": \"IST\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/events",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"events"
+							]
+						},
+						"description": "Create a new event with timezone support"
+					},
+					"response": []
+				},
+				{
+					"name": "List Events",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/events?skip=0&limit=10",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"events"
+							],
+							"query": [
+								{
+									"key": "skip",
+									"value": "0",
+									"description": "Number of events to skip"
+								},
+								{
+									"key": "limit",
+									"value": "10",
+									"description": "Maximum number of events to return"
+								}
+							]
+						},
+						"description": "Get all events with pagination"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Event Details",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/events/{{event_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"events",
+								"{{event_id}}"
+							]
+						},
+						"description": "Get event details with all attendees"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Event with Timezone",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/events/{{event_id}}/timezone?timezone=EST",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"events",
+								"{{event_id}}",
+								"timezone"
+							],
+							"query": [
+								{
+									"key": "timezone",
+									"value": "EST",
+									"description": "Target timezone for conversion"
+								}
+							]
+						},
+						"description": "Get event with times converted to specified timezone"
+					},
+					"response": []
+				}
+			],
+			"description": "Event management endpoints"
+		},
+		{
+			"name": "Attendees",
+			"item": [
+				{
+					"name": "Register Attendee",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john.doe@example.com\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/events/{{event_id}}/register",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"events",
+								"{{event_id}}",
+								"register"
+							]
+						},
+						"description": "Register an attendee for a specific event"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Event Attendees",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/events/{{event_id}}/attendees?skip=0&limit=20",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"events",
+								"{{event_id}}",
+								"attendees"
+							],
+							"query": [
+								{
+									"key": "skip",
+									"value": "0",
+									"description": "Number of attendees to skip"
+								},
+								{
+									"key": "limit",
+									"value": "20",
+									"description": "Maximum number of attendees to return"
+								}
+							]
+						},
+						"description": "Get attendees for a specific event with pagination"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Attendee Count",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/events/{{event_id}}/attendees/count",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"events",
+								"{{event_id}}",
+								"attendees",
+								"count"
+							]
+						},
+						"description": "Get total count of attendees for an event"
+					},
+					"response": []
+				}
+			],
+			"description": "Attendee management endpoints"
+		},
+		{
+			"name": "Utilities",
+			"item": [
+				{
+					"name": "Get Supported Timezones",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/timezones",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"timezones"
+							]
+						},
+						"description": "Get list of all supported timezones"
+					},
+					"response": []
+				}
+			],
+			"description": "Utility endpoints"
+		},
+		{
+			"name": "Error Testing",
+			"item": [
+				{
+					"name": "Create Event - Invalid Times",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Invalid Event\",\n  \"location\": \"Test Location\",\n  \"start_time\": \"2024-06-15T17:00:00\",\n  \"end_time\": \"2024-06-15T09:00:00\",\n  \"max_capacity\": 100,\n  \"timezone\": \"IST\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/events",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"events"
+							]
+						},
+						"description": "Test error handling for invalid time range"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Event - Invalid Capacity",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Invalid Event\",\n  \"location\": \"Test Location\",\n  \"start_time\": \"2024-06-15T09:00:00\",\n  \"end_time\": \"2024-06-15T17:00:00\",\n  \"max_capacity\": 0,\n  \"timezone\": \"IST\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/events",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"events"
+							]
+						},
+						"description": "Test error handling for invalid capacity"
+					},
+					"response": []
+				},
+				{
+					"name": "Register Attendee - Duplicate Email",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john.doe@example.com\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/events/{{event_id}}/register",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"events",
+								"{{event_id}}",
+								"register"
+							]
+						},
+						"description": "Test duplicate email registration prevention"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Non-existent Event",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/events/99999",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"events",
+								"99999"
+							]
+						},
+						"description": "Test 404 error for non-existent event"
+					},
+					"response": []
+				}
+			],
+			"description": "Error handling test cases"
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000",
+			"type": "string"
+		},
+		{
+			"key": "event_id",
+			"value": "1",
+			"type": "string"
+		}
+	]
+}
